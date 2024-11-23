@@ -1,0 +1,26 @@
+stages:
+  - build
+  - deploy
+
+build_image:
+  stage: build
+  tags:
+    - yourtag #Change
+  script:
+    - printenv
+    - echo "$CI_REGISTRY_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - docker build -t "$CI_REGISTRY/$CI_REGISTRY_NAME:latest" .
+    - docker push "$CI_REGISTRY/$CI_REGISTRY_NAME:latest"
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  tags:
+    - yourtag #Change
+  script:
+    - kubectl apply -f cluster-issuer.yml
+    - kubectl apply -f ingress-staging.yml
+    - kubectl apply -f ingress-prod.yml
+  only:
+    - main
